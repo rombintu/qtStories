@@ -11,7 +11,7 @@ s = socket.socket()             # Create a socket object
 host = socket.gethostname()     # Get local machine name
 port = 60001                    # Reserve a port for your service.
 
-file = 'stories.json'
+file = os.getcwd() + '/stories.json'
 
 def valid_ip(ip):
     try:
@@ -94,8 +94,7 @@ class App(QtWidgets.QMainWindow, form.Ui_MainWindow):
 
     def update_stories(self):
         ip, yes = QtWidgets.QInputDialog.getText(self, 'Вход', 'Введи ip сервера:')
-        # if yes and valid_ip(ip) or ip == 'localhost':
-        if 1:
+        if yes and valid_ip(ip) or ip == 'localhost':
             try:
                 update_base(ip)
             except Exception as e:

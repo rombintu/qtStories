@@ -3,13 +3,14 @@ from sqlalchemy.orm import sessionmaker
 from model import Stories
 import socket    
 import json
+import os
 
 port = 60001                    # Reserve a port for your service.
 s = socket.socket()             # Create a socket object
 host = socket.gethostname()     # Get local machine name
 s.bind(('localhost', port))            # Bind to the port
 s.listen(5)                     # Now wait for client connection.
-file = 'stories.json'
+file = os.getcwd() + '/stories.json'
 
 def main():
     print('Server is started...')
