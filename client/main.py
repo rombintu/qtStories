@@ -6,14 +6,38 @@ import socket                   # Import socket module
 import json
 from random import choice
 from PyQt5 import QtWidgets, uic
+# ЭЦП
+from sign import check_sign
+import config
 
 s = socket.socket()             # Create a socket object
 # Получаем порт и айпи из переменных окружения (для секьюрности)
-port = os.environ['PORT']
-host = os.environ['HOST']
+port = config.PORT
+host = config.HOST
 # Переменная для файла джайсон
 file = os.getcwd() + '/stories.json'
+tmp = os.getcwd() + '/tmp'
+signfile = tmp + '/signature.pem'
+keyfile = tmp + '/key.pem'
 
+def writefile(filename, content):
+    with open(filename, 'wb') as f:
+        f.write(content.encode())
+
+def pars_crypt():
+    sign_pubkey = []
+    with open(file, 'rb') as f:
+        content = f.readlines()[-1]
+        sign_pubkey.append(content[:32])
+        sign_pubkey.append(content[32:])
+
+    rf = open(file).readlines()
+    rf.pop(-1)
+    with open(file, 'wb') as F:
+        F.writelines(rf)
+
+    return sign_pubkey
+        
 # Функция для проверки валидности айпи
 def valid_ip(ip):
     try:
@@ -22,6 +46,7 @@ def valid_ip(ip):
         return False
     else:
         return True
+
 # Получение контента по именам из файла, например get_content('hero')
 def get_content(name):
     name_arr = []
@@ -32,7 +57,7 @@ def get_content(name):
         name_arr.append(el[name])
     return name_arr
 
-# Подключение к серверу и скачивае нового файла джейсон
+# Подключение к серверу и скачивание нового файла джейсон
 def update_base(ip):
     s.connect((ip, port))
     with open(file, 'wb') as f:
@@ -43,10 +68,15 @@ def update_base(ip):
                 break
             # write data to a file
             f.write(data)
-
-    f.close()
     print('Successfully get the file')
     s.close()
+    arr_sign = pars_crypt()
+    print(arr_sign)
+    if check_sign(file, arr_sign[0], arr_sign[1]):
+        print('SIGRATURE OK!')
+    else:
+        print('SIGNATURE NOT OK!')
+
     print('connection closed')
 
 # Окно приложения
@@ -102,11 +132,11 @@ class App(QtWidgets.QMainWindow, form.Ui_MainWindow):
         # Спрашиваем у пользователя IP 
         ip, yes = QtWidgets.QInputDialog.getText(self, 'Вход', 'Введи ip сервера:')
         if yes and valid_ip(ip) or ip == 'localhost':
-            try:
-                update_base(ip)
-            except Exception as e:
-                errorWin = QtWidgets.QErrorMessage(self)
-                errorWin.showMessage(f'Ошибка: \n{e}')
+            # try:
+            update_base(ip)
+            # except Exception as e:
+            #     errorWin = QtWidgets.QErrorMessage(self)
+            #     errorWin.showMessage(f'Ошибка: \n{e}')
         else:
             errorWin = QtWidgets.QErrorMessage(self)
             errorWin.showMessage(f'Ошибка: \n{e}')

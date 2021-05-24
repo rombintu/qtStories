@@ -8,9 +8,13 @@ import socket
 import json
 import os
 
+import config
+# ЭЦП
+from sign import create_sign
+
 # Получаем порт и айпи из переменных окружения (для секьюрности)
-port = os.environ['PORT']
-host = os.environ['HOST']
+port = config.PORT
+host = config.HOST
 # Создаем сокет
 s = socket.socket()             
 # Связываем сокет с адресом и портом
@@ -19,12 +23,20 @@ s.bind((host, port))
 s.listen(5)
 # Переменная для файла джайсон
 file = os.getcwd() + '/stories.json'
+tmp = os.getcwd() + '/tmp'
+signfile = tmp + '/signature.pem'
+keyfile = tmp + '/key.pem'
+
+def writefile(filename, content):
+    with open(filename, 'wb') as f:
+        f.write(content.encode())
 
 # Главная функция
 def main():
     print('Server is started...')
     # Все делаем в цикле (типа сервер слушает соединения)
     while True:
+        
         # Когда кто то присоединяется то берем данные о клиенте
         conn, addr = s.accept()
         # Есть с кем то соединение то берем данные из бд
@@ -45,7 +57,8 @@ def main():
                         {"hero": st.hero, 
                         "story": st.story,
                         "end": st.end})
-                f.write(json.dumps({"data": arr_data}, indent=4))
+                f.write(json.dumps({"data": arr_data}, indent=4) + '\n')
+                
         # Открываем этот файл для записи и читаем побайтово
         f = open(file,'rb')
         l = f.read(1024)
@@ -54,7 +67,11 @@ def main():
             conn.send(l)
             l = f.read(1024)
         f.close()
-
+        
+        # ЭЦП
+        signature, pubkey = create_sign(file)
+        conn.send(str(signature).encode())
+        conn.send(str(pubkey).encode())
         print(f'Done sending to {addr}')
         # Закрываем соединение
         conn.close()
