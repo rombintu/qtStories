@@ -6,11 +6,12 @@ import socket                   # Import socket module
 import json
 from random import choice
 from PyQt5 import QtWidgets, uic
+import config
 
 s = socket.socket()             # Create a socket object
 # Получаем порт и айпи из переменных окружения (для секьюрности)
-port = os.environ['PORT']
-host = os.environ['HOST']
+port = config.PORT
+host = config.HOST
 # Переменная для файла джайсон
 file = os.getcwd() + '/stories.json'
 
