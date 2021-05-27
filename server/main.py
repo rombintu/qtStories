@@ -7,10 +7,10 @@ from model import Stories
 import socket    
 import json
 import os
-
+import config
 # Получаем порт и айпи из переменных окружения (для секьюрности)
-port = os.environ['PORT']
-host = os.environ['HOST']
+port = config.PORT
+
 # Создаем сокет
 s = socket.socket()             
 # Связываем сокет с адресом и портом
