@@ -9,3 +9,5 @@ program.e*
 db.sqlite
 stories.json
 .qt*
+tmp/*.pem
+tmp/*.json
