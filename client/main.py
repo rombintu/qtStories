@@ -9,8 +9,6 @@ from PyQt5 import QtWidgets, uic
 import config
 
 s = socket.socket()             # Create a socket object
-
-s = socket.socket()             # Create a socket object
 # Получаем порт и айпи из переменных окружения (для секьюрности)
 port = config.PORT
 host = config.HOST
