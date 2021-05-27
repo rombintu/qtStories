@@ -8,3 +8,4 @@ program.e*
 .vscode*
 db.sqlite
 stories.json
+.qt*

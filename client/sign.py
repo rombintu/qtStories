@@ -3,11 +3,13 @@ import os
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
+from Crypto.Util import asn1
+from base64 import b64decode
 
 
-def create_sign(file_name):
+def sign_init(file_name):
     # Генерируем новый ключ
-    key = RSA.generate(1024, os.urandom)
+    private_key = RSA.generate(1024, os.urandom)
     # Получаем хэш файла
     hesh = SHA256.new()
     with open(file_name, "rb") as f:
@@ -15,17 +17,29 @@ def create_sign(file_name):
             hesh.update(chunk)
 
     # Подписываем хэш
-    signature = pkcs1_15.new(key).sign(hesh)
+    signature = pkcs1_15.new(private_key).sign(hesh)
 
     # Получаем открытый ключ из закрытого
-    pubkey = key.publickey()
-    return pubkey, signature
+    pub_key = private_key.publickey().exportKey(format='PEM')
+    return pub_key, signature
 
-def check_sign(file_name, pubkey, signature):
+def check_sign(file_name, k_pem, s_pem):
+    def read_pem(file, b=False):
+        if not b:
+            with open(file, "r") as f:
+                return f.read()
+        else:
+            with open(file, "rb") as f:
+                return f.read()
+    
+    pubkey = RSA.importKey(read_pem(k_pem))
+    signature = read_pem(s_pem, True)
+
     hesh = SHA256.new()
     with open(file_name, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hesh.update(chunk)
+
     # Переменная для проверки подписи
     check_sign = False
     try:
@@ -34,4 +48,4 @@ def check_sign(file_name, pubkey, signature):
         return check_sign
     except Exception as e:
         print(e)
-        return check_sign   
+        return check_sign 
